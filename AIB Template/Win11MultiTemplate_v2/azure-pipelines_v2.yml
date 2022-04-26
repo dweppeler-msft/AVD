@@ -24,12 +24,12 @@ steps:
 - task: AzureCLI@2
   displayName: "Copy Install Script"
   inputs:
-    azureSubscription: 'Microsoft Azure Sponsorship 2 (8fdc4569-2133-492f-b048-7fbfff6b39d1)'
+    azureSubscription: 'YourSubScription'
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       az storage blob upload \
-                        --account-name samemdroid \
+                        --account-name YourStorageAccountName \
                         --container-name avdimagebuilder \
                         --name Install-Applications_v2.ps1 \
                         --file Install-Applications_v2.ps1 \
@@ -38,8 +38,8 @@ steps:
   continueOnError: true
   inputs:
       deploymentScope: 'Resource Group'
-      azureResourceManagerConnection: 'Microsoft Azure Sponsorship 2 (8fdc4569-2133-492f-b048-7fbfff6b39d1)'
-      subscriptionId: '8fdc4569-2133-492f-b048-7fbfff6b39d1'
+      azureResourceManagerConnection: 'YourSubScription'
+      subscriptionId: 'YourSubscriptionId'
       action: 'Create Or Update Resource Group'
       resourceGroupName: '$(ResourceGroup)'
       location: '$(Location)'
@@ -50,21 +50,21 @@ steps:
 - task: AzurePowerShell@5
   displayName: "Install AZ.ImageBuilder"
   inputs:
-    azureSubscription: 'Microsoft Azure Sponsorship 2 (8fdc4569-2133-492f-b048-7fbfff6b39d1)'
+    azureSubscription: 'YourSubScription'
     ScriptType: 'InlineScript'
     Inline: 'Install-Module -name Az.ImageBuilder -AllowPrerelease -Force -Scope CurrentUser'
     azurePowerShellVersion: 'LatestVersion'
 - task: AzurePowerShell@5
   displayName: "Build Image"
   inputs:
-    azureSubscription: 'Microsoft Azure Sponsorship 2 (8fdc4569-2133-492f-b048-7fbfff6b39d1)'
+    azureSubscription: 'YourSubScription'
     ScriptType: 'InlineScript'
     Inline: 'Start-AzImageBuilderTemplate -ResourceGroupName $(ResourceGroup) -Name $(ImageTemplateName)'
     azurePowerShellVersion: 'LatestVersion'
 - task: AzurePowerShell@5
   displayName: "Remove Template"
   inputs:
-    azureSubscription: 'Microsoft Azure Sponsorship 2 (8fdc4569-2133-492f-b048-7fbfff6b39d1)'
+    azureSubscription: 'YourSubScription'
     ScriptType: 'InlineScript'
     Inline: 'Remove-AzImageBuilderTemplate -ImageTemplateName $(ImageTemplateName) -ResourceGroupName $(ResourceGroup)'
     azurePowerShellVersion: 'LatestVersion'
