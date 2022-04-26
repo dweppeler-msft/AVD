@@ -14,9 +14,9 @@ Write-Host "Installing Core Apps"
 
 # Connect to StorageAccount
 
-$StorageAccountHostname = "samemdroid.file.core.windows.net"
-$StorageAccountShareName = "apps/core-apps"
-$SAS = "?sv=2020-08-04&ss=f&srt=sco&sp=rwdlc&se=2022-06-30T21:06:16Z&st=2022-04-06T13:06:16Z&spr=https&sig=lS0n1c%2FBQDP5LzFCwnAYxgV41X34LmfO2sPYwfvj9NY%3D"
+$StorageAccountHostname = "YourStorageAccountName.file.core.windows.net"
+$StorageAccountShareName = "YourFileShareName"
+$SAS = "YourSAS"
 
 # Create folders
 $Localpath = "C:\programdata\wvd"

@@ -24,7 +24,7 @@
         "identity": {
           "type": "UserAssigned",
           "userAssignedIdentities": {
-            "/subscriptions/8fdc4569-2133-492f-b048-7fbfff6b39d1/resourceGroups/RG-EUW-AIB/providers/Microsoft.ManagedIdentity/userAssignedIdentities/aibIdentity1632306243": {}
+            "/subscriptions/YourSubscriptionId/resourceGroups/YourRG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YourMgmtIdentity": {}
           }
         },
         
@@ -46,13 +46,13 @@
             "type": "PowerShell",
             "runElevated": true,
             "name": "RunPoShInstall",
-            "scriptUri": "https://samemdroid.blob.core.windows.net/avdimagebuilder/Install-Applications_v2.ps1?sp=r&st=2022-03-10T12:04:38Z&se=2022-04-30T19:04:38Z&spr=https&sv=2020-08-04&sr=c&sig=VlxEecSq3bEzsB7S3dihdU6MIoropMe1JxH5%2FgTHkyY%3D"
+            "scriptUri": "YourInstallScriptURL"
             }
           ],
           "distribute": [
             {
               "type": "ManagedImage",
-              "imageId": "/subscriptions/8fdc4569-2133-492f-b048-7fbfff6b39d1/resourceGroups/RG-EUW-AIB/providers/Microsoft.Compute/images/AVD-AIB-Image",
+              "imageId": "/subscriptions/YourSubscriptionId/resourceGroups/YourRG/providers/Microsoft.Compute/images/YourImageName",
               "location": "WestEurope",
               "runOutputName": "Win11AVD-Client",
               "artifactTags": {
