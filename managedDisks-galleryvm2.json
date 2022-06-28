@@ -446,10 +446,6 @@
       "location": "[parameters('location')]",
       "tags": "[parameters('virtualMachineTags')]",
       "plan": "[variables('vmPlan')]",
-      "copy": {
-        "name": "rdsh-vm-loop",
-        "count": "[parameters('rdshNumberOfInstances')]"
-      },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', parameters('rdshPrefix'), add(copyindex(), parameters('vmInitialNumber')), '-nic')]"
       ],
