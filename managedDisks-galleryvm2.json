@@ -500,19 +500,7 @@
         "licenseType": "Windows_Client"
       },
       "zones": "[if(equals(parameters('availabilityOption'), 'AvailabilityZone'), array(parameters('availabilityZone')), variables('emptyArray'))]"
-    }, 
-    {
-      "condition": "[not(empty(parameters('customConfigurationTemplateUrl')))]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "name": "post-deployment-custom-configuration",
-      "dependsOn": [
-        "rdsh-dsc-loop",
-        "rdsh-aad-join-loop",
-        "rdsh-domain-join-loop"
-      ],
-      "properties": "[variables('customConfigurationParameter')]"
-    }
+    } 
   ],
   "outputs": {}
 }
