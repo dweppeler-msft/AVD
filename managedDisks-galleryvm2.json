@@ -416,10 +416,6 @@
       "name": "[concat(parameters('rdshPrefix'), add(copyindex(), parameters('vmInitialNumber')), '-nic')]",
       "location": "[parameters('location')]",
       "tags": "[parameters('networkInterfaceTags')]",
-      "copy": {
-        "name": "rdsh-nic-loop",
-        "count": "[parameters('rdshNumberOfInstances')]"
-      },
       "properties": {
         "ipConfigurations": [
           {
