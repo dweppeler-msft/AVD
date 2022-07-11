@@ -5,10 +5,10 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2021-04-01",
-            "name": "[concat(parameters('rdshPrefix'), parameters('vmInitialNumber'),'/', 'InstallVSCode')]",
+            "name": "[concat(parameters('NamePrefix'), parameters('VirtualMachineIndex'),'/', 'InstallVSCode')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshPrefix'), parameters('vmInitialNumber')))]"
+                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('NamePrefix'), parameters('VirtualMachineIndex')))]"
             ],
             "properties": {
               "publisher": "Microsoft.Compute",
