@@ -6,7 +6,7 @@
             "value": "westeurope"
         },
         "NamePrefix": {
-            "value": "VM-AVDAADP"
+            "value": "VM-AVDAADP-"
         },
         "NumberOfVms": {
             "value": 1
