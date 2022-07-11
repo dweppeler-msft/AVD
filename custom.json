@@ -8,7 +8,7 @@
             "name": "[concat(parameters('NamePrefix'), parameters('VirtualMachineIndex'),'/', 'InstallVSCode')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshNamePrefix'), parameters('vmNumber')))]"
+                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshPrefix'), parameters('vmInitialNumber')))]"
             ],
             "properties": {
               "publisher": "Microsoft.Compute",
