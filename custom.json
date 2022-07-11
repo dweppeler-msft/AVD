@@ -12,7 +12,7 @@
         "type": "int"
       },
       "ScriptUri": {
-        "type": "string"
+        "type": ""
       },
       "Timestamp": {
         "type": "string",
