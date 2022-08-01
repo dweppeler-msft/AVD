@@ -313,7 +313,7 @@
               "autoUpgradeMinorVersion": true,
               "settings": {
                 "fileUris": [
-                  "https://samemdroid.blob.core.windows.net/scripts/InstallAutomationScripts_v3.ps1?sp=r&st=2022-07-07T07:33:16Z&se=2022-09-08T15:33:16Z&spr=https&sv=2021-06-08&sr=b&sig=kcrefhCAyUusRM%2Fdk5yAUkdiQtBpep0gmvcvdbQ0dNk%3D"
+                  "https://samemdroid.blob.core.windows.net/scripts/InstallAutomationScripts_v3.ps1?sp=r&st=2022-08-01T09:29:40Z&se=2022-12-31T18:29:40Z&spr=https&sv=2021-06-08&sr=b&sig=xnAal1eiaLnZu627j%2BDMNLZzyIcMgCikBxjGm8GWNG8%3D"
                 ],
                 "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallAutomationScripts.ps1"
               }
