@@ -320,7 +320,7 @@
                 "fileUris": [
                   "[parameters('customScriptLocation')]",
                 ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File parameters('customScriptName')" 
+                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File [parameters('customScriptLocation')]" 
               }
             }
         }
