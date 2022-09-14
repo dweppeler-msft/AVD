@@ -320,7 +320,7 @@
                 "fileUris": [
                   "[parameters('customScriptLocation')]",
                 ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File [parameters('customScriptLocation')]" 
+                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallAutomationScripts_v3.ps1" 
               }
             }
         }
