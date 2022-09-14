@@ -122,12 +122,18 @@
             },
             "defaultValue": "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_11-22-2021.zip"
         },
-        "NumberOfInstances": {
-            "type": "int",
+        "customScriptLocation": {
+            "type": "string",
             "metadata": {
-                "description": "Number of session hosts that will be created and added to the hostpool."
+                "description": "The URI where the script is stored for the Custom Script Extension."
             }
         },
+	"customScriptName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the customer script."
+            }
+        }, 
         "hostPoolToken": {
             "type": "string",
             "metadata": {
@@ -313,9 +319,9 @@
               "autoUpgradeMinorVersion": true,
               "settings": {
                 "fileUris": [
-                  "https://samemdroid.blob.core.windows.net/scripts/InstallAutomationScripts_v3.ps1?sp=r&st=2022-08-01T09:29:40Z&se=2022-12-31T18:29:40Z&spr=https&sv=2021-06-08&sr=b&sig=xnAal1eiaLnZu627j%2BDMNLZzyIcMgCikBxjGm8GWNG8%3D"
+                  "[parameters('customScriptLocation')]",
                 ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallAutomationScripts.ps1"
+                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallAutomationScripts.ps1" 
               }
             }
         }
