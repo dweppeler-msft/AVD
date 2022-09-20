@@ -320,7 +320,7 @@
                 "fileUris": [
                   "[parameters('customScriptLocation')]",
                 ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File Install-Applications_v2.ps1" 
+                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File Install-Applications_v3.ps1" 
               }
             }
         }
