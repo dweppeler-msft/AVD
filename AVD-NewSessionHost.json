@@ -1,0 +1,352 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "6.0.0.0",
+    "parameters": {
+        "rdshNamePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "This prefix will be made using a subset of the  Resource Group Name"
+            },
+            "defaultValue": "[take(toUpper(replace(resourceGroup().name,'-','')),12)]"
+        },
+        "vmNumber": {
+            "type": "string",
+            "metadata": {
+                "description": "The VM number to be provisioned"
+            }
+        },
+        "rdshVMDiskType": {
+            "type": "string",
+            "allowedValues": [
+                "Premium_LRS",
+                "StandardSSD_LRS",
+                "Standard_LRS"
+            ],
+            "metadata": {
+                "description": "The VM disk type for the VM: Premium_LRS (Default), Standard_LRS or StandardSSD_LRS."
+            },
+            "defaultValue": "StandardSSD_LRS"
+        },
+        "rdshVmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "The size of the session host VMs."
+            }
+        },
+        "enableAcceleratedNetworking": {
+            "type": "bool",
+            "metadata": {
+                "description": "Enables Accelerated Networking feature, notice that VM size must support it, this is supported in most of general purpose and compute-optimized instances with 2 or more vCPUs, on instances that supports hyperthreading it is required minimum of 4 vCPUs."
+            },
+            "defaultValue": false
+        },
+        "existingVnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the virtual network the VMs will be connected to."
+            }
+        },
+        "existingSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The subnet the VMs will be placed in."
+            }
+        },
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "The resource group containing the existing virtual network."
+            }
+        },
+        "imagePublisher": {
+            "type": "string",
+            "metadata": {
+                "description": "The ID of the image gallery image to be used."
+            }
+        },
+        "imageOffer": {
+            "type": "string",
+            "metadata": {
+                "description": "The ID of the image gallery image to be used."
+            }
+        },
+        "imageSKU": {
+            "type": "string",
+            "metadata": {
+                "description": "The ID of the image gallery image to be used."
+            }
+        },                
+        "vmAdminID": {
+            "type": "string",
+            "metadata": {
+                "description": ""
+            },
+			"defaultValue": "azureadm"
+        },	
+        "vmAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": ""
+            }
+        },		
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "(Required for Azure Marketplace.) Leave as is, unless you would like to not use a location that is different from the location of the resouce group."
+            }
+        },
+        "DedicatedDesktop": {
+            "type": "bool",
+            "metadata": {
+                "description": "Set this parameter to true if you would like to enable Dedicated Desktop experience. Defaults to false."
+            },
+            "defaultValue": false
+        },
+        "hostPoolName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the hostpool that this VM will be a member of."
+            }
+        },
+        "AvailSetExists": {
+            "type": "bool",
+            "metadata": {
+                "description": "Dont touch. Required so that the AvailSet is only created if it doesn't exist"
+            }
+        },
+        "artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located."
+            },
+            "defaultValue": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/ARM-wvd-templates/DSC/Configuration.zip"
+        },
+        "NumberOfInstances": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of session hosts that will be created and added to the hostpool."
+            }
+        },
+        "hostPoolToken": {
+            "type": "string",
+            "metadata": {
+                "description": "The token for adding VMs to the hostpool"
+            }
+        },
+        "aadJoin": {
+            "type": "bool",
+            "metadata": {
+                "description": "IMPORTANT: You can use this parameter for the test purpose only as AAD Join is public preview. True if AAD Join, false if AD join"
+            },
+            "defaultValue": false
+        },
+        "intune": {
+            "type": "bool",
+            "metadata": {
+                "description": "IMPORTANT: Please don't use this parameter as intune enrollment is not supported yet. True if intune enrollment is selected.  False otherwise"
+            },
+            "defaultValue": false
+        },
+        "SessionHostConfigurationVersion": {
+            "type": "string",
+            "metadata": {
+                "description": "Session host configuration version of the host pool."
+            },
+            "defaultValue": ""
+        },
+        "resourceTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to all the resources"
+            },
+            "defaultValue": {}
+        },
+        "rdshNumberOfInstances": {
+        "type": "int",
+        "metadata": {
+        "description": "Number of session hosts that will be created and added to the hostpool."
+        },
+        "defaultValue": 1
+        }
+    },
+    "variables": {
+        "subnet-id": "[resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVnetName'), parameters('existingSubnetName'))]",
+		"availabilitySetId": {
+            "id": "[if(equals(parameters('DedicatedDesktop'),bool('False')),resourceId('Microsoft.Compute/availabilitySets/', concat(parameters('rdshNamePrefix'),'-',parameters('hostPoolName'), '-availabilitySet')),json('null'))]"
+        },
+        "vmIdentity": {
+            "type": "SystemAssigned"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-10-01",
+			"condition": "[and(equals(parameters('DedicatedDesktop'),bool('False')),equals(parameters('AvailSetExists'),bool('False')))]",
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[concat(parameters('rdshNamePrefix'),'-',parameters('hostPoolName'), '-availabilitySet')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 2
+            },
+            "sku": {
+                "name": "Aligned"
+            }
+        },
+        {
+            "apiVersion": "2018-11-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-nic')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('subnet-id')]"
+                            }
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]"
+            }
+        },
+        {
+            "apiVersion": "2021-04-01",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'))]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
+            "dependsOn": [
+                "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-nic')]"
+            ],
+            "identity": "[variables('vmIdentity')]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('rdshVmSize')]"
+                },
+                "availabilitySet": "[if(equals(parameters('DedicatedDesktop'),bool('False')),variables('availabilitySetId'),json('null'))]",
+                "osProfile": {
+                    "computerName": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'))]",
+                    "adminUsername": "[parameters('vmAdminID')]",
+                    "adminPassword": "[parameters('vmAdminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('imagePublisher')]",
+                        "offer": "[parameters('imageOffer')]",
+                        "sku": "[parameters('imageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-OSDisk')]",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('rdshVMDiskType')]"
+                            }
+
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-nic'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                },
+                "licenseType": "Windows_Client",
+                "securityProfile": {
+                    "securityType": "TrustedLaunch",
+                    "uefiSettings": {
+                        "secureBootEnabled": "true",
+                        "vTpmEnabled": "true"
+                    }
+                }
+			}
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '/', 'AADLoginForWindows')]",
+            "location": "[parameters('location')]",
+            "apiVersion": "2021-07-01",
+            "copy": {
+                "name": "rdsh-aad-join",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshNamePrefix'), parameters('vmNumber')))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.ActiveDirectory",
+                "type": "AADLoginForWindows",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": "[createObject('mdmId','0000000a-0000-0000-c000-000000000000')]"
+            }
+        },
+        {
+            "apiVersion": "2021-07-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '/', 'InstallAVDSessionHost')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "rdsh-setup",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
+            "dependsOn": [
+                "rdsh-aad-join"
+            ],
+            "properties": {
+              "publisher": "Microsoft.Powershell",
+              "type": "DSC",
+              "typeHandlerVersion": "2.73",
+              "autoUpgradeMinorVersion": true,
+              "settings": {
+                "modulesUrl": "[parameters('artifactsLocation')]",
+                "configurationFunction": "Configuration.ps1\\AddSessionHost",
+                "properties": {
+                    "hostPoolName": "[parameters('hostpoolName')]",
+                    "registrationInfoToken": "[parameters('hostpoolToken')]",
+                    "aadJoin": "[parameters('aadJoin')]",
+                    "sessionHostConfigurationLastUpdateTime": "[parameters('SessionHostConfigurationVersion')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-07-01",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'),'/', 'InstallAutomationScripts')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "name": "automation-setup",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
+            "dependsOn": [
+                "rdsh-setup"
+            ],
+            "properties": {
+              "publisher": "Microsoft.Compute",
+              "type": "CustomScriptExtension",
+              "typeHandlerVersion": "1.7",
+              "autoUpgradeMinorVersion": true,
+              "settings": {
+                "fileUris": [
+                  "https://yourstorageaccount.blob.core.windows.net/yourcontainer/yourScript.ps1?SASToken"
+                ],
+                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File yourScript.ps1"
+              }
+            }
+        }
+       
+    ]
+}
