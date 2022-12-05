@@ -169,14 +169,14 @@
         },
         "defaultValue": 1
         },
-        "scriptFile": {
+        "customScriptFile": {
         "type": "String",
         "metadata": {
         "description": "The uri where installation script are located."
         },
         "defaultValue": ""
         },
-        "scriptName": {
+        "customScriptName": {
         "type": "String",
         "metadata": {
         "description": "The name of the installation script"
@@ -354,8 +354,8 @@
               "typeHandlerVersion": "1.7",
               "autoUpgradeMinorVersion": true,
               "settings": {
-                "fileUris": [ "[parameters('scriptFile')]" ],
-                "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('scriptName'))]"
+                "fileUris": [ "[parameters('customScriptFile')]" ],
+                "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('customScriptName'))]"
               }
             }
         }

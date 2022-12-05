@@ -127,12 +127,6 @@
                 "description": "The URI where the script is stored for the Custom Script Extension."
             }
         },
-	"customScriptName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of custom script."
-            }
-        },
         "hostPoolToken": {
             "type": "string",
             "metadata": {
@@ -159,6 +153,20 @@
                 "description": "Session host configuration version of the host pool."
             },
             "defaultValue": ""
+        },
+        "customScriptFile": {
+        "type": "String",
+        "metadata": {
+        "description": "The uri where installation script are located."
+        },
+        "defaultValue": ""
+        },
+        "customScriptName": {
+        "type": "String",
+        "metadata": {
+        "description": "The name of the installation script"
+        },
+        "defaultValue": ""
         }
 	},
     "variables": {
@@ -317,10 +325,9 @@
               "typeHandlerVersion": "1.7",
               "autoUpgradeMinorVersion": true,
               "settings": {
-                "fileUris": [
-                  "[parameters('customScriptLocation')]",
-                ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File Install-Applications_v3.ps1" 
+              "settings": {
+                "fileUris": [ "[parameters('customScriptFile')]" ],
+                "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('customScriptName'))]"
               }
             }
         }
