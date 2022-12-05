@@ -81,6 +81,7 @@
             "metadata": {
                 "description": ""
             },
+			"defaultValue": "azureadm"
         },	
         "vmAdminPassword": {
             "type": "securestring",
@@ -119,18 +120,12 @@
             "metadata": {
                 "description": "The base URI where artifacts required by this template are located."
             },
-            "defaultValue": "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_11-22-2021.zip"
+            "defaultValue": "https://raw.githubusercontent.com/Azure/RDS-Templates/master/ARM-wvd-templates/DSC/Configuration.zip"
         },
-        "customScriptLocation": {
-            "type": "string",
+        "NumberOfInstances": {
+            "type": "int",
             "metadata": {
-                "description": "The URI where the script is stored for the Custom Script Extension."
-            }
-        },
-	"customScriptName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of custom script."
+                "description": "Number of session hosts that will be created and added to the hostpool."
             }
         },
         "hostPoolToken": {
@@ -159,8 +154,36 @@
                 "description": "Session host configuration version of the host pool."
             },
             "defaultValue": ""
+        },
+        "resourceTags": {
+            "type": "object",
+            "metadata": {
+                "description": "The tags to be assigned to all the resources"
+            },
+            "defaultValue": {}
+        },
+        "rdshNumberOfInstances": {
+        "type": "int",
+        "metadata": {
+        "description": "Number of session hosts that will be created and added to the hostpool."
+        },
+        "defaultValue": 1
+        },
+        "scriptFile": {
+        "type": "String",
+        "metadata": {
+        "description": "The uri where installation script are located."
+        },
+        "defaultValue": ""
+        },
+        "scriptName": {
+        "type": "String",
+        "metadata": {
+        "description": "The name of the installation script"
+        },
+        "defaultValue": ""
         }
-	},
+    },
     "variables": {
         "subnet-id": "[resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVnetName'), parameters('existingSubnetName'))]",
 		"availabilitySetId": {
@@ -190,6 +213,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-nic')]",
             "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
             "properties": {
                 "ipConfigurations": [
                     {
@@ -210,6 +234,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'))]",
             "location": "[parameters('location')]",
+            "tags": "[parameters('resourceTags')]",
             "dependsOn": [
                 "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '-nic')]"
             ],
@@ -249,7 +274,7 @@
                 },
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
-                        "enabled": false
+                        "enabled": true
                     }
                 },
                 "licenseType": "Windows_Client",
@@ -266,7 +291,11 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '/', 'AADLoginForWindows')]",
             "location": "[parameters('location')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2021-07-01",
+            "copy": {
+                "name": "rdsh-aad-join",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshNamePrefix'), parameters('vmNumber')))]"
             ],
@@ -279,12 +308,16 @@
             }
         },
         {
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2021-07-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '/', 'Microsoft.PowerShell.DSC')]",
+            "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'), '/', 'InstallAVDSessionHost')]",
             "location": "[parameters('location')]",
+            "copy": {
+                "name": "rdsh-setup",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshNamePrefix'), parameters('vmNumber')))]"
+                "rdsh-aad-join"
             ],
             "properties": {
               "publisher": "Microsoft.Powershell",
@@ -305,11 +338,15 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2021-04-01",
+            "apiVersion": "2021-07-01",
             "name": "[concat(parameters('rdshNamePrefix'), parameters('vmNumber'),'/', 'InstallAutomationScripts')]",
             "location": "[parameters('location')]",
+            "copy": {
+                "name": "automation-setup",
+                "count": "[parameters('rdshNumberOfInstances')]"
+            },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('rdshNamePrefix'), parameters('vmNumber')))]"
+                "rdsh-setup"
             ],
             "properties": {
               "publisher": "Microsoft.Compute",
@@ -317,10 +354,8 @@
               "typeHandlerVersion": "1.7",
               "autoUpgradeMinorVersion": true,
               "settings": {
-                "fileUris": [
-                  "[parameters('customScriptLocation')]",
-                ],
-                "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallAutomationScripts_v3.ps1" 
+                "fileUris": [ "[parameters('scriptFile')]" ],
+                "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('scriptName'))]"
               }
             }
         }
