@@ -7,8 +7,9 @@ Try {
 
     if ($null -ne $TeamsMachineWide) {
     Write-Host "Teams Classic Machine Wide Installer is installed..."
-    Write-Host "Uninstalling Teams Classic Machine Wide Installer now..."
+    Write-Host "Uninstalling the Teams Classic Machine Wide Installer now..."
     $TeamsMachineWide.Uninstall()
+    Write-Host "Successfully uninstalled the Teams Classic Machine Wide Installer..."
     } else { Write-Host "Teams Classic Machine Wide Installer is NOT installed..."}
        
     # Download Edge WebView2 Sources
